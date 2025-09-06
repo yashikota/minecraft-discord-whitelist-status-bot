@@ -2,15 +2,8 @@ name: Publish Docker Image
 
 on:
   push:
-    branches: [ "main" ]
-    tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
-  packages: write
-  id-token: write
+    tags:
+      - "v*"
 
 env:
   REGISTRY: ghcr.io
