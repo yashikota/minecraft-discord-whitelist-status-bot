@@ -1,0 +1,12 @@
+services:
+  discord-whitelist-status-bot:
+    build: .
+    container_name: minecraft-discord-whitelist-status-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - DISCORD_STATUS_CHANNEL_ID=${DISCORD_STATUS_CHANNEL_ID}
+      - MINECRAFT_RCON_HOST=${MINECRAFT_RCON_HOST}
+      - MINECRAFT_RCON_PORT=${MINECRAFT_RCON_PORT}
+      - MINECRAFT_RCON_PASSWORD=${MINECRAFT_RCON_PASSWORD}
