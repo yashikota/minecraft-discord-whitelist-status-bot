@@ -16,6 +16,7 @@ FROM python:3.13-slim-bookworm
 COPY --from=builder /app /app
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 

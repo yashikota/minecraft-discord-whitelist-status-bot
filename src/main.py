@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 import re
 import sqlite3
@@ -9,7 +8,7 @@ import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from mcrcon import MCRcon
+from simple_rcon import SimpleRcon
 
 
 class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist Application"):
@@ -288,9 +287,8 @@ class MinecraftWhitelistStatusBot(commands.Bot):
 
     async def is_server_running(self) -> bool:
         try:
-            loop = asyncio.get_event_loop()
             return await asyncio.wait_for(
-                loop.run_in_executor(None, self._check_server_sync), timeout=5.0
+                asyncio.to_thread(self._check_server_sync), timeout=5.0
             )
         except asyncio.TimeoutError:
             return False
@@ -300,7 +298,7 @@ class MinecraftWhitelistStatusBot(commands.Bot):
 
     def _check_server_sync(self) -> bool:
         try:
-            with MCRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
+            with SimpleRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
                 mcr.command("list")
                 return True
         except Exception:
@@ -308,9 +306,8 @@ class MinecraftWhitelistStatusBot(commands.Bot):
 
     async def get_player_list(self) -> list[str]:
         try:
-            loop = asyncio.get_event_loop()
             return await asyncio.wait_for(
-                loop.run_in_executor(None, self._get_player_list_sync), timeout=5.0
+                asyncio.to_thread(self._get_player_list_sync), timeout=5.0
             )
         except asyncio.TimeoutError:
             return []
@@ -320,7 +317,7 @@ class MinecraftWhitelistStatusBot(commands.Bot):
 
     def _get_player_list_sync(self) -> list[str]:
         try:
-            with MCRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
+            with SimpleRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
                 response = mcr.command("list")
                 if ": " in response:
                     player_part = response.split(": ", 1)[1]
@@ -335,9 +332,8 @@ class MinecraftWhitelistStatusBot(commands.Bot):
 
     async def add_to_whitelist(self, username: str) -> bool:
         try:
-            loop = asyncio.get_event_loop()
             return await asyncio.wait_for(
-                loop.run_in_executor(None, self._add_to_whitelist_sync, username),
+                asyncio.to_thread(self._add_to_whitelist_sync, username),
                 timeout=10.0,
             )
         except asyncio.TimeoutError:
@@ -348,7 +344,7 @@ class MinecraftWhitelistStatusBot(commands.Bot):
 
     def _add_to_whitelist_sync(self, username: str) -> bool:
         try:
-            with MCRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
+            with SimpleRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
                 response = mcr.command(f"whitelist add {username}")
                 return "Added" in response or "already" in response
         except Exception:
@@ -357,9 +353,8 @@ class MinecraftWhitelistStatusBot(commands.Bot):
     async def remove_from_whitelist(self, username: str) -> bool:
         """Remove user from server whitelist"""
         try:
-            loop = asyncio.get_event_loop()
             return await asyncio.wait_for(
-                loop.run_in_executor(None, self._remove_from_whitelist_sync, username),
+                asyncio.to_thread(self._remove_from_whitelist_sync, username),
                 timeout=10.0,
             )
         except asyncio.TimeoutError:
@@ -370,7 +365,7 @@ class MinecraftWhitelistStatusBot(commands.Bot):
 
     def _remove_from_whitelist_sync(self, username: str) -> bool:
         try:
-            with MCRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
+            with SimpleRcon(self.rcon_host, self.rcon_password, port=self.rcon_port) as mcr:
                 response = mcr.command(f"whitelist remove {username}")
                 return "Removed" in response or "not on" in response
         except Exception:
