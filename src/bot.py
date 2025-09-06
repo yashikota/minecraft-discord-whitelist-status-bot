@@ -176,7 +176,7 @@ class MinecraftWhitelistStatusBot(commands.Bot):
                             )
                     else:
                         await interaction.followup.send(
-                            f"❌ Failed to remove from database."
+                            "❌ Failed to remove from database."
                         )
 
                 else:
@@ -218,7 +218,7 @@ class MinecraftWhitelistStatusBot(commands.Bot):
                             )
                     else:
                         await interaction.followup.send(
-                            f"❌ Failed to remove from database."
+                            "❌ Failed to remove from database."
                         )
 
             except Exception as e:

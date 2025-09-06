@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Run Lint
+        continue-on-error: true
+        run: uvx ruff check --output-format=github .
+
+      - name: Run Format
+        continue-on-error: true
+        run: uvx ruff format . --check --diff && uvx isort .
+
+      - name: Check for changes
+        run: |
+          if ! git diff --quiet; then
+            echo "Code formatting changes detected:"
+            git diff
+            exit 1
+          else
+            echo "Code is properly formatted"
+          fi

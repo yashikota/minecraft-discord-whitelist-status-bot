@@ -62,7 +62,7 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist Application"):
                         )
                     else:
                         await interaction.followup.send(
-                            f"⚠️ Added to whitelist but failed to save to database. Please contact admin.",
+                            "⚠️ Added to whitelist but failed to save to database. Please contact admin.",
                             ephemeral=True,
                         )
                 else:
