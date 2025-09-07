@@ -1,5 +1,6 @@
 from bot import MinecraftWhitelistStatusBot
 from config import BotConfig
+from utils import log_error
 
 
 def main():
@@ -7,7 +8,7 @@ def main():
 
     is_valid, error_message = config.validate()
     if not is_valid:
-        print(f"Error: {error_message}")
+        log_error(f"Error: {error_message}")
         return
 
     bot = MinecraftWhitelistStatusBot(config)

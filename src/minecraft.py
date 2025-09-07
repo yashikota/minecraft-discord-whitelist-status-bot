@@ -4,6 +4,7 @@ import re
 import aiohttp
 
 from rcon import Rcon
+from utils import log_error
 
 
 class MinecraftManager:
@@ -30,7 +31,7 @@ class MinecraftManager:
                     else:
                         return False, "Error occurred while checking username"
         except Exception as e:
-            print(f"API call error: {e}")
+            log_error("Minecraft username validation", e)
             return False, "Error occurred while checking username"
 
     async def is_server_running(self) -> bool:
@@ -41,7 +42,7 @@ class MinecraftManager:
         except asyncio.TimeoutError:
             return False
         except Exception as e:
-            print(f"Server connection error: {e}")
+            log_error("Server connection check", e)
             return False
 
     def _check_server_sync(self) -> bool:
@@ -60,7 +61,7 @@ class MinecraftManager:
         except asyncio.TimeoutError:
             return []
         except Exception as e:
-            print(f"Player list error: {e}")
+            log_error("Player list retrieval", e)
             return []
 
     def _get_player_list_sync(self) -> list[str]:
@@ -84,7 +85,7 @@ class MinecraftManager:
         except asyncio.TimeoutError:
             return False
         except Exception as e:
-            print(f"Whitelist add error: {e}")
+            log_error("Whitelist addition", e)
             return False
 
     def _add_to_whitelist_sync(self, username: str) -> bool:
@@ -104,7 +105,7 @@ class MinecraftManager:
         except asyncio.TimeoutError:
             return False
         except Exception as e:
-            print(f"Whitelist remove error: {e}")
+            log_error("Whitelist removal", e)
             return False
 
     def _remove_from_whitelist_sync(self, username: str) -> bool:

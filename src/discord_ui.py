@@ -2,6 +2,8 @@ from typing import Protocol
 
 import discord
 
+from utils import ErrorMessages, log_error
+
 
 class BotProtocol(Protocol):
     pending_users: set[int]
@@ -41,7 +43,7 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist Application"):
 
         if user_id in self.bot.pending_users:
             await interaction.response.send_message(
-                "⏳ Already processing. Please wait.", ephemeral=True
+                ErrorMessages.PROCESSING_REQUEST, ephemeral=True
             )
             return
 
@@ -74,10 +76,8 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist Application"):
                 await interaction.followup.send(f"❌ {message}", ephemeral=True)
 
         except Exception as e:
-            print(f"Error: {e}")
-            await interaction.followup.send(
-                "❌ Error occurred during processing. Please try again.", ephemeral=True
-            )
+            log_error("Whitelist modal processing", e)
+            await interaction.followup.send(ErrorMessages.GENERIC_ERROR, ephemeral=True)
 
         finally:
             self.bot.pending_users.discard(user_id)
@@ -98,7 +98,7 @@ class ServerStatusView(discord.ui.View):
 
         if not self.is_server_running:
             await interaction.response.send_message(
-                "❌ Server is offline.", ephemeral=True
+                ErrorMessages.SERVER_OFFLINE, ephemeral=True
             )
             return
 
