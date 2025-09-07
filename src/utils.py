@@ -98,3 +98,27 @@ def format_error_message(message: str) -> str:
 def get_current_timestamp() -> str:
     """Get current timestamp in consistent format"""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def format_duration(seconds: int) -> str:
+    """Format duration in seconds to human readable format (hours:minutes:seconds)"""
+    if seconds < 0:
+        return "0:00:00"
+
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+
+    return f"{hours}:{minutes:02d}:{seconds:02d}"
+
+
+def format_datetime(datetime_str: str | None) -> str:
+    """Format datetime string for display"""
+    if not datetime_str:
+        return "Not recorded"
+
+    try:
+        dt = datetime.fromisoformat(datetime_str.replace("Z", "+00:00"))
+        return dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+    except (ValueError, AttributeError):
+        return "Invalid date"

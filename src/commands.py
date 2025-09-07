@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 import discord
 from discord import app_commands
 
-from utils import ErrorMessages, format_error_message, log_error
+from utils import (ErrorMessages, format_datetime, format_duration,
+                   format_error_message, log_error)
 
 if TYPE_CHECKING:
     from bot import MinecraftWhitelistStatusBot
@@ -169,6 +170,140 @@ class CommandHandler:
                 log_error("List whitelist command", e)
                 await interaction.followup.send(ErrorMessages.GENERIC_ERROR)
 
+        @app_commands.command(
+            name="stat",
+            description="Display player statistics (all players by default)",
+        )
+        @app_commands.describe(
+            minecraft_username="Specific player to view detailed stats (optional)"
+        )
+        async def stat_command(
+            interaction: discord.Interaction, minecraft_username: str = None
+        ):
+            await interaction.response.defer()
+
+            try:
+                if minecraft_username:
+                    stats = self.bot.db_manager.get_player_stats(minecraft_username)
+                    if not stats:
+                        await interaction.followup.send(
+                            format_error_message(
+                                f"Player `{minecraft_username}` statistics not found."
+                            )
+                        )
+                        return
+
+                    embed = discord.Embed(
+                        title=f"📊 {stats['username']} Statistics",
+                        color=0x00FF00 if stats["is_online"] else 0x808080,
+                    )
+
+                    # Status
+                    status_emoji = "🟢" if stats["is_online"] else "🔴"
+                    status_text = "Online" if stats["is_online"] else "Offline"
+                    embed.add_field(
+                        name="Status",
+                        value=f"{status_emoji} {status_text}",
+                        inline=True,
+                    )
+
+                    # Total playtime
+                    total_playtime_formatted = format_duration(
+                        int(stats["total_playtime"])
+                    )
+                    embed.add_field(
+                        name="Total Playtime",
+                        value=f"⏱️ {total_playtime_formatted}",
+                        inline=True,
+                    )
+
+                    # First join date
+                    first_join_formatted = format_datetime(stats["first_join_at"])
+                    embed.add_field(
+                        name="First Login",
+                        value=f"🎯 {first_join_formatted}",
+                        inline=False,
+                    )
+
+                    # Last seen date
+                    last_seen_formatted = format_datetime(stats["last_seen_at"])
+                    embed.add_field(
+                        name="Last Login",
+                        value=f"👋 {last_seen_formatted}",
+                        inline=False,
+                    )
+
+                    # Registration date
+                    created_at_formatted = format_datetime(stats["created_at"])
+                    embed.add_field(
+                        name="Whitelist Registration",
+                        value=f"📝 {created_at_formatted}",
+                        inline=False,
+                    )
+
+                    await interaction.followup.send(embed=embed)
+
+                else:
+                    # Show stats for all players
+                    all_stats = self.bot.db_manager.get_all_players_stats()
+
+                    if not all_stats:
+                        await interaction.followup.send(
+                            "📄 No registered players found."
+                        )
+                        return
+
+                    embed = discord.Embed(
+                        title="📊 Player Statistics Overview",
+                        color=0x00FF00,
+                        description=f"Total registered players: {len(all_stats)}",
+                    )
+
+                    # Show top players by playtime (limit to 20 to avoid embed limits)
+                    display_count = min(len(all_stats), 20)
+
+                    for i, stats in enumerate(all_stats[:display_count]):
+                        status_emoji = "🟢" if stats["is_online"] else "🔴"
+                        total_playtime_formatted = format_duration(
+                            int(stats["total_playtime"])
+                        )
+
+                        value_text = f"⏱️ {total_playtime_formatted}"
+
+                        # Add first join info if available
+                        if stats["first_join_at"]:
+                            first_join_formatted = format_datetime(
+                                stats["first_join_at"]
+                            )
+                            value_text += f"\n🎯 First: {first_join_formatted}"
+
+                        # Add last seen info if available
+                        if stats["last_seen_at"]:
+                            last_seen_formatted = format_datetime(stats["last_seen_at"])
+                            value_text += f"\n👋 Last: {last_seen_formatted}"
+
+                        embed.add_field(
+                            name=f"{i + 1}. {stats['username']} {status_emoji}",
+                            value=value_text,
+                            inline=False,
+                        )
+
+                    if len(all_stats) > 20:
+                        embed.set_footer(
+                            text=f"... and {len(all_stats) - 20} more players. Use '/stat <username>' for detailed stats."
+                        )
+                    else:
+                        embed.set_footer(
+                            text="Use '/stat <username>' for detailed player statistics."
+                        )
+
+                    await interaction.followup.send(embed=embed)
+
+            except Exception as e:
+                log_error("Stat command", e)
+                await interaction.followup.send(ErrorMessages.GENERIC_ERROR)
+
         # Register commands with the bot
         self.bot.tree.add_command(remove_whitelist_command)
         self.bot.tree.add_command(list_whitelist_command)
+        self.bot.tree.add_command(stat_command)
