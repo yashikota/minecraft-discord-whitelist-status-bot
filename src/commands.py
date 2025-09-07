@@ -53,12 +53,12 @@ class CommandHandler:
         if server_removed:
             return (
                 True,
-                f"✅ Removed {user_mention} (Minecraft: `{minecraft_username}`) from whitelist.",
+                f"✅ Removed {user_mention} (Minecraft ID: `{minecraft_username}`) from whitelist.",
             )
         else:
             return (
                 True,
-                f"⚠️ Removed from database but failed to remove from server whitelist.\nMinecraft: `{minecraft_username}`",
+                f"⚠️ Removed from database but failed to remove from server whitelist.\nMinecraft ID: `{minecraft_username}`",
             )
 
     async def setup_commands(self):
